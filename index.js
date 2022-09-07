@@ -49,10 +49,11 @@
         const type = mime.lookup(`./avatars/${filename}`)
         fs.writeFileSync(`./.data/types/${req.params.id}`, type)
         
-        const crop = (await smartcrop.crop(fs.readFileSync(`./avatars/${filename}`, {width: 256, height: 256, weight: 1.0}))).topCrop
+        const crop = (await smartcrop.crop(fs.readFileSync(`./avatars/${filename}`), { minScale: 1.0, width: 256, height: 256, ruleOfThirds: false })).topCrop
+
         await gm(`./avatars/${filename}`)
         .crop(crop.width, crop.height, crop.x, crop.y)
-        .resize(256, 256)
+        // .resize(256, 256)
         .write(`./.data/avatars/${req.params.id}`, (err) => {
             if(err) throw err
             logger.green().send(`Image cropped, now serving.`)
