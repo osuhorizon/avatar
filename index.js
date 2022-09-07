@@ -53,15 +53,7 @@
 
     fastify.get('/:id', async (req, reply) => {
         if(isNaN(req.params.id)) return;
-        const cache = fs.existsSync(`./.data/avatars/${req.params.id}`)
-
-        if(cache){
-            logger.green().send(`Serving ${req.params.id} from cache`)
-            reply.type(fs.readFileSync(`./.data/types/${req.params.id}`, 'utf8'))
-            reply.send(fs.readFileSync(`./.data/avatars/${req.params.id}`))
-            return
-        }
-
+        
         const files = fs.readdirSync('./avatars');
         let filename;
 
@@ -92,6 +84,9 @@
             logger.green().send(`Image cropped, now serving.`)
             reply.type(fs.readFileSync(`./.data/types/${req.params.id}`, 'utf8'))
             reply.send(fs.readFileSync(`./.data/avatars/${req.params.id}`))
+
+            fs.rmSync(`./.data/avatars/${req.params.id}`)
+            fs.rmSync(`./.data/types/${req.params.id}`)
         })
 
         return reply
