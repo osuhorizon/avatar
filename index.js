@@ -53,7 +53,7 @@
 
         await gm(`./avatars/${filename}`)
         .crop(crop.width, crop.height, crop.x, crop.y)
-        // .resize(256, 256)
+        .resize(256, 256)
         .write(`./.data/avatars/${req.params.id}`, (err) => {
             if(err) throw err
             logger.green().send(`Image cropped, now serving.`)
