@@ -19,6 +19,38 @@
         logger.send("Creating avatars folder")
     }
 
+    let defaultAvatar;
+
+    const files = fs.readdirSync('./avatars');
+
+    if(!fs.existsSync('./.data/avatars/-1')){
+        for (var i = 0; i < files.length; i++){
+            if(files[i].startsWith(`-1.`)){ //* Add the . to prevent numbers like 10021 trigger the 1002 avatar
+                defaultAvatar = files[i]
+                logger.yellow().send(`Found: default (${files[i]})`)
+            };
+        };
+    
+        if(!defaultAvatar){
+            logger.red().send('Error: No default avatar found. Please put your desired avatar with the name -1 into the avatars folder."')
+            return process.exit(1)
+        }
+
+        
+        const type = mime.lookup(`./avatars/${defaultAvatar}`)
+        fs.writeFileSync(`./.data/types/-1`, type)
+
+        const crop = (await smartcrop.crop(fs.readFileSync(`./avatars/${defaultAvatar}`), { minScale: 1.0, width: 256, height: 256, ruleOfThirds: false })).topCrop
+
+        await gm(`./avatars/${defaultAvatar}`)
+        .crop(crop.width, crop.height, crop.x, crop.y)
+        .resize(256, 256)
+        .write(`./.data/avatars/-1`, (err) => {
+            if(err) throw err
+            logger.green().send(`default image cropped.`)
+        })
+    }
+
     fastify.get('/:id', async (req, reply) => {
         if(isNaN(req.params.id)) return;
         const cache = fs.existsSync(`./.data/avatars/${req.params.id}`)
