@@ -1,0 +1,27 @@
+{
+  "name": "avatar",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/osuhorizon/avatar.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/osuhorizon/avatar/issues"
+  },
+  "homepage": "https://github.com/osuhorizon/avatar#readme",
+  "dependencies": {
+    "cutesy.js": "^1.2.2",
+    "fastify": "^4.5.3",
+    "gm": "^1.23.1",
+    "mime-types": "^2.1.35",
+    "smartcrop-gm": "^2.0.2"
+  }
+}
