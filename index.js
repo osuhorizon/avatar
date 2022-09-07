@@ -9,6 +9,7 @@
 
     const logger = new Logger().yellow()
     if(!fs.existsSync('./.data')){
+        fs.mkdirSync('./.data')
         fs.mkdirSync('./.data/avatars')
         fs.mkdirSync('./.data/types')
         logger.send("Creating data folder")
