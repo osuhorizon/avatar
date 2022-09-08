@@ -5,15 +5,11 @@
     const mime = require("mime-types")
     const smartcrop = require("smartcrop-gm")
     const gm = require("gm").subClass({ imageMagick: true})
-    const config = require("./config")
+
+    const avatarCache = []
 
     const logger = new Logger().yellow()
-    if(!fs.existsSync('./.data')){
-        fs.mkdirSync('./.data')
-        fs.mkdirSync('./.data/avatars')
-        fs.mkdirSync('./.data/types')
-        logger.send("Creating data folder")
-    }
+
     if(!fs.existsSync('./avatars')){
         fs.mkdirSync('./avatars')
         logger.send("Creating avatars folder")
@@ -36,17 +32,15 @@
             return process.exit(1)
         }
 
-        
-        const type = mime.lookup(`./avatars/${defaultAvatar}`)
-        fs.writeFileSync(`./.data/types/-1`, type)
-
         const crop = (await smartcrop.crop(fs.readFileSync(`./avatars/${defaultAvatar}`), { minScale: 1.0, width: 256, height: 256, ruleOfThirds: false })).topCrop
 
-        await gm(`./avatars/${defaultAvatar}`)
+        gm(`./avatars/${defaultAvatar}`)
         .crop(crop.width, crop.height, crop.x, crop.y)
         .resize(256, 256)
-        .write(`./.data/avatars/-1`, (err) => {
+        .toBuffer((err, buffer) => {
             if(err) throw err
+            avatarCache.push(mime.lookup(`./avatars/${defaultAvatar}`))
+            avatarCache.push(buffer)
             logger.green().send(`default image cropped.`)
         })
     }
@@ -66,32 +60,25 @@
 
         if(!filename){
             logger.yellow().send(`Serving default for ${req.params.id}`)
-            reply.type(fs.readFileSync(`./.data/types/-1`, 'utf8'))
-            reply.send(fs.readFileSync(`./.data/avatars/-1`))
+            reply.type(avatarCache[0])
+            reply.send(avatarCache[1])
             return
         }
-
-        const type = mime.lookup(`./avatars/${filename}`)
-        fs.writeFileSync(`./.data/types/${req.params.id}`, type)
         
         const crop = (await smartcrop.crop(fs.readFileSync(`./avatars/${filename}`), { minScale: 1.0, width: 256, height: 256, ruleOfThirds: false })).topCrop
 
-        await gm(`./avatars/${filename}`)
+        gm(`./avatars/${filename}`)
         .crop(crop.width, crop.height, crop.x, crop.y)
         .resize(256, 256)
-        .write(`./.data/avatars/${req.params.id}`, (err) => {
+        .toBuffer((err, buffer) => {
             if(err) throw err
-            logger.green().send(`Image cropped, now serving.`)
-            reply.type(fs.readFileSync(`./.data/types/${req.params.id}`, 'utf8'))
-            reply.send(fs.readFileSync(`./.data/avatars/${req.params.id}`))
-
-            fs.rmSync(`./.data/avatars/${req.params.id}`)
-            fs.rmSync(`./.data/types/${req.params.id}`)
+            reply.type(mime.lookup(`./avatars/${filename}`))
+            reply.send(buffer)
+            logger.green().send(`Serving ${filename}`)
         })
 
         return reply
     })
 
-    fastify.listen({ port: config.port })
-    logger.purpleBlue().send("Listening on port " + config.port)
+    fastify.listen({ port: 4999 })
 })();
